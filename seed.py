@@ -1,4 +1,4 @@
-"""Seed ShopFloor IQ with machines and 30 days of backdated sensor readings.
+"""Seed ShopFloor AI with machines and 30 days of backdated sensor readings.
 
 Run from the project root:  python seed.py
 Wipes existing machines and readings first, so it is safe to re-run.
