@@ -64,15 +64,14 @@ def delete_machine(id: int, db: Session = Depends(database.get_db)):
 
 #Get all Sensor data
 @router.get("/{machine_id}/readings", response_model=list[schemas.SensorReadingOut], status_code=status.HTTP_200_OK)
-def get_all_data(machine_id : int, metric: Optional[str] = None, limit_number: int = Query(50, ge=1, le=100), db: Session = Depends(database.get_db)):
-    query = db.query(models.Machine).filter(models.Machine.id == machine_id)
-    if query is None:
+def get_all_data(machine_id : int, metric: Optional[str] = None, limit_number: int = Query(50, ge=1, le=1000), db: Session = Depends(database.get_db)):
+    machine = db.query(models.Machine).filter(models.Machine.id == machine_id).first()
+    if machine is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                     detail= f"Machine with id = {machine_id} not found")
+    query = db.query(models.SensorReading).filter(models.SensorReading.machine_id == machine_id)
     if metric is not None:
-        query = query.filter(models.SensorReading.metric == metric)
-        all_data = query.order_by(models.SensorReading.recorded_at.desc()).limit(limit_number).all()
-    if all_data is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail= f"Machine with Sensor reading metric = {metric} was not found")
-    return all_data
+        query = db.query(models.SensorReading).filter(models.SensorReading.metric == metric)
+        
+    return query.order_by(models.SensorReading.recorded_at.desc()).limit(limit_number).all()
+    
