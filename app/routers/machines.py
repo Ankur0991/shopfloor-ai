@@ -11,7 +11,7 @@ router = APIRouter(prefix="/machines", tags=["Machines"])
 def new_machine(NewMachinedata : schemas.MachineCreate, db: Session = Depends(database.get_db)):
     new_machine = models.Machine(**NewMachinedata.model_dump())
     db.add(new_machine)
-    db.commit
+    db.commit()
     db.refresh(new_machine) 
     return new_machine
 

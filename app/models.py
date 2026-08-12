@@ -8,8 +8,8 @@ class Machine(Base):
     id = Column(Integer, primary_key = True, nullable = False)
     name = Column(String, nullable=False)
     line = Column(String, nullable=False)
-    location = Column(String, nullable=False)
-    installed_at = Column(DateTime(timezone=True), nullable=False)
+    location = Column(String, nullable=True)
+    installed_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, default=func.now())
 
 
