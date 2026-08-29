@@ -1,8 +1,6 @@
-from fastapi import Depends, HTTPException, status, APIRouter, Response
-from typing import Optional
-from app import schemas,models,database
+from fastapi import Depends, HTTPException, status, APIRouter
+from app import schemas,models,database, utils
 from sqlalchemy.orm import Session
-
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -10,10 +8,10 @@ router = APIRouter(prefix="/users", tags=["Users"])
 @router.post("/", response_model=schemas.UserOut, status_code= status.HTTP_201_CREATED)
 def create_user(user_data : schemas.UserCreate, db : Session = Depends(database.get_db)):
     user_exists = db.query(models.User).filter(models.User.email == user_data.email).first()
-    if user_exists is None:
+    if user_exists is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail= f"User with email = {user_data.email} already exists")
-    new_user = models.User(**user_data.model_dump())
+    new_user = models.User(email= user_data.email, hashed_password= utils.hash_password(user_data.password), full_name= user_data.full_name)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
