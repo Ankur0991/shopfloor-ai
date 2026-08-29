@@ -16,8 +16,9 @@ class MachineUpdate(MachineBase):
 
 class MachineOut(MachineBase):
     id: int
-    created_at : datetime
+    created_at: datetime
     model_config = ConfigDict(from_attributes=True)
+    created_by: int
 
 class SensorReadingBase(BaseModel):
     machine_id: int
@@ -31,6 +32,7 @@ class SensorReadingCreate(SensorReadingBase):
 class SensorReadingOut(SensorReadingBase):
     recorded_at: datetime
     model_config = ConfigDict(from_attributes=True)
+    created_by : int
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -48,4 +50,4 @@ class Token(BaseModel):
     token_type: str
 
 class TokenData(BaseModel):
-    user_id: Optional[int] = None
+    id: Optional[int] = None
