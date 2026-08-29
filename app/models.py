@@ -11,6 +11,7 @@ class Machine(Base):
     location = Column(String, nullable=True)
     installed_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, default=func.now())
+    created_by = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
 
 class SensorReading(Base):
@@ -21,6 +22,7 @@ class SensorReading(Base):
     value = Column(Float, nullable=False)
     unit = Column(String, nullable=False)
     recorded_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_by = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
 class User(Base):
     __tablename__ = "users"
