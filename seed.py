@@ -109,7 +109,8 @@ def wipe(db):
     db.commit()
 
 def main():
-    models.Base.metadata.create_all(bind=engine)
+    #Using Alembic now
+    #models.Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     latest_at = datetime.now(timezone.utc)
 

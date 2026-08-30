@@ -5,7 +5,8 @@ from app.routers import machines, readings, users, auth
 
 app = FastAPI()
 
-models.Base.metadata.create_all(bind=database.engine)
+#Commented this as now we are using Alembic
+#models.Base.metadata.create_all(bind=database.engine)
 
 
 app.include_router(machines.router)
