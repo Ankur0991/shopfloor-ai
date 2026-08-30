@@ -1,6 +1,7 @@
 from fastapi import Depends, HTTPException, status, APIRouter
 from app import schemas,models,database, utils
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -12,8 +13,11 @@ def create_user(user_data : schemas.UserCreate, db : Session = Depends(database.
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail= f"User with email = {user_data.email} already exists")
     new_user = models.User(email= user_data.email, hashed_password= utils.hash_password(user_data.password), full_name= user_data.full_name)
-    db.add(new_user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"User with email = {user_data.email} already exists")
     db.refresh(new_user)
     return new_user
 
