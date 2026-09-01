@@ -12,7 +12,10 @@ def create_user(user_data : schemas.UserCreate, db : Session = Depends(database.
     if user_exists is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail= f"User with email = {user_data.email} already exists")
-    new_user = models.User(email= user_data.email, hashed_password= utils.hash_password(user_data.password), full_name= user_data.full_name)
+    new_user = models.User(email= user_data.email, 
+                           hashed_password= utils.hash_password(user_data.password), 
+                           full_name= user_data.full_name)
+    db.add(new_user)
     try:
         db.commit()
     except IntegrityError:
@@ -20,6 +23,7 @@ def create_user(user_data : schemas.UserCreate, db : Session = Depends(database.
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"User with email = {user_data.email} already exists")
     db.refresh(new_user)
     return new_user
+
 
 @router.get("/{id}", response_model = schemas.UserOut, status_code= status.HTTP_200_OK)
 def get_user(id: int, db: Session = Depends(database.get_db)):
