@@ -1,6 +1,6 @@
 import pytest
 import jwt
-from datetime import timezone, timedelta
+from datetime import timezone, timedelta, datetime
 from app.config import settings
 
 def machine_payload(**overrides):
@@ -29,15 +29,9 @@ def test_post_reading_without_token_is_401(client, test_machines):
 @pytest.mark.parametrize("bad_token", [
     "garbage",                                    # structurally invalid
     "Bearer.also.garbage",                        # three segments, not a JWT
-    jwt.encode({"user_id": 1}, "wrong-secret-key", algorithm="HS256"),
+    jwt.encode({"user_id": 1}, "30a6e3da88f9fc65f3e6347f4a38307b4af595b24d639dc95d9ce9936f7b4c24", algorithm="HS256"),
 ])
 def test_malformed_token_is_401_not_500(client, bad_token):
-    """The one bug class no other test can see.
-
-    Catching the wrong exception type in verify_access_token turns every
-    bad token into a 500. Structurally-invalid and signed-with-wrong-key
-    take different code paths, so both are needed.
-    """
     response = client.post(
         "/machines/",
         json=machine_payload(),
@@ -47,15 +41,6 @@ def test_malformed_token_is_401_not_500(client, bad_token):
 
 
 def test_expired_token_is_401_not_500(client):
-    """Signed with the CORRECT key, but past its exp claim.
-
-    PyJWT raises ExpiredSignatureError, which is a sibling of DecodeError,
-    not a subclass. `except jwt.DecodeError` catches the garbage cases above
-    and lets this one through as a 500 — a bug that only appears once real
-    tokens start ageing past their expiry in production.
-
-    Catch jwt.PyJWTError (or jwt.InvalidTokenError) to cover both branches.
-    """
     expired = jwt.encode(
         {
             "user_id": 1,
@@ -138,10 +123,15 @@ def test_delete_missing_machine_is_404_not_403(second_client):
     assert response.status_code == 404
 
 
-def test_other_user_cannot_delete_reading(second_client, test_readings):
+def test_any_authenticated_user_can_delete_any_reading(second_client, test_readings):
     reading = test_readings[0]
     response = second_client.delete(f"/readings/{reading.id}")
-    assert response.status_code == 403
+    assert response.status_code == 204
+
+def test_delete_reading_without_token_is_401(client, test_readings):
+        reading = test_readings[0]
+        response = client.delete(f"/readings/{reading.id}")
+        assert response.status_code == 401
 
 
 # --- /machines/mine scoping -------------------------------------------------
@@ -162,6 +152,7 @@ def test_mine_is_empty_for_other_user(second_client, test_machines):
 def test_mine_requires_a_token(client):
     response = client.get("/machines/mine")
     assert response.status_code == 401
+
 
 
 

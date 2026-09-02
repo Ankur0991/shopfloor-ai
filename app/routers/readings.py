@@ -32,8 +32,8 @@ def single_sensor_data(id: int, db: Session = Depends(database.get_db)):
 
 
 #Delete Sensor data with particular ID
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_data(id: int, current_user : models.User = Depends(oauth2.get_current_user), db: Session = Depends(database.get_db)):
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT, dependencies = [Depends(oauth2.get_current_user)])
+def delete_data(id: int, db: Session = Depends(database.get_db)):
     reading = db.query(models.SensorReading).filter(models.SensorReading.id == id).first()
     if reading is None:
         raise HTTPException(404, detail=f"Reading with id = {id} not found")
